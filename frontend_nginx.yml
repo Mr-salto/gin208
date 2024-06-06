@@ -1,0 +1,58 @@
+---
+- name: Deploy and configure Nginx on frontend instance
+  hosts: frontend
+  become: true
+  
+  vars_files:
+    - vars/generic.yml
+  
+  tasks:
+  - name: Install nginx package             
+    ansible.builtin.apt:                    
+      update_cache: yes                     
+      pkg:                                  
+        - nginx                             
+      state: present                        
+
+  - name: Create the web root directory
+    ansible.builtin.file:
+        path: /var/www/{{domain}}
+        state: directory
+        mode: '0755'
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+#### A faire: changer la conf nginx pour servir la page html
+  - name: change index.html
+    ansible.builtin.copy:
+      src: files/index.html
+      dest: /var/www/{{domain}}/index.html
+      mode: '0775'
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+
+
+  - name: install certbot
+    community.general.snap:
+      name:
+        - certbot
+      classic: true
+  
+  - name: set certbot privilege
+    ansible.builtin.command: snap set certbot trust-plugin-with-root=ok
+
+  - name: install certbot addons
+    community.general.snap:
+      name:
+        - certbot-dns-route53
+      classic: true
+
+  - name: issue certificate
+    ansible.builtin.command: certbot --non-interactive --redirect --agree-tos --nginx -d "{{domain}}" -m devops@intuitivesoft.cloud  
+    notify: restart nginx
+  
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+    

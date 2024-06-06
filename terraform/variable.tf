@@ -17,3 +17,6 @@ variable "pub_subnet_name" {
 variable "priv_subnet_name" {
   type = string
 }
+variable "host_name" {
+  type = string
+}

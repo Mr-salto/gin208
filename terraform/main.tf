@@ -90,6 +90,14 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ssh_ipv4" {
   ip_protocol       = "tcp"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "allow_80" {
+  security_group_id = aws_security_group.gfetu_sg_front.id
+  cidr_ipv4         = "137.194.0.0/16"
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+}
+
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4_front" {
   security_group_id = aws_security_group.gfetu_sg_front.id
@@ -132,7 +140,7 @@ data "aws_ami" "ami" {
 
 resource "aws_instance" "gfetu_frontend" {
   ami                         = data.aws_ami.ami.id
-  instance_type               = "t2.nano"
+  instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.pub_subnet.id
   key_name                    = aws_key_pair.gfetu_project_ssh_key_pair.key_name
   associate_public_ip_address = true
@@ -146,6 +154,20 @@ resource "aws_instance" "gfetu_frontend" {
 
 output "public_ip_frontend" {
   value = aws_instance.gfetu_frontend.public_ip
+}
+
+
+data "aws_route53_zone" "zone" {
+  name         = "devops.intuitivesoft.cloud."
+  private_zone = false
+}
+
+resource "aws_route53_record" "www" {
+  zone_id = data.aws_route53_zone.zone.zone_id
+  name  = "${var.host_name}.${data.aws_route53_zone.zone.name}"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.gfetu_frontend.public_ip]
 }
 
 
@@ -186,7 +208,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ssh_from_frontend" {
 #### Create backend instance 
 resource "aws_instance" "gfetu_backend" {
   ami                         = data.aws_ami.ami.id
-  instance_type               = "t2.nano"
+  instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.priv_subnet.id
   key_name                    = aws_key_pair.gfetu_project_ssh_key_pair.key_name
   associate_public_ip_address = true
@@ -214,14 +236,12 @@ output "private_ip_backend" {
 resource "local_file" "inventory" {
   filename = "../inventory.ini"
   content = <<EOF
-[frontend]
 frontend ansible_host=${aws_instance.gfetu_frontend.public_ip}
 
-[backend]
 backend ansible_host=${aws_instance.gfetu_backend.public_ip}
 
 [all:vars]
-ansible_ssh_private_key_file=../../.ssh/private_key_gfetu_gin208
+ansible_ssh_private_key_file=./../.ssh/private_key_gfetu_gin208
 ansible_user=ubuntu
 EOF
 }

@@ -1,0 +1,24 @@
+# Step 1: Install Git LFS
+git lfs install
+
+# Step 2: Track large files with Git LFS
+git lfs track "terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/5.52.0/linux_amd64/terraform-provider-aws_v5.52.0_x5"
+
+# Step 3: Ensure .gitattributes is tracked
+git add .gitattributes
+git commit -m "Track large files with Git LFS"
+
+# Step 4: Remove large files from staging area
+git rm --cached "terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/5.52.0/linux_amd64/terraform-provider-aws_v5.52.0_x5"
+
+# Step 5: Commit the removal of large files
+git commit -m "Remove large files from history"
+
+# Step 6: Push the changes
+git push origin master
+
+# Step 7: Update .gitignore to ignore large files and directories
+echo -e "terraform/.terraform/\n*.log\n*.tmp" >> .gitignore
+git add .gitignore
+git commit -m "Update .gitignore to ignore large files and directories"
+git push origin master

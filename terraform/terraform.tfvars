@@ -1,0 +1,5 @@
+region = "us-east-1"
+cidr_block1 = "192.168.1.0/24"
+cidr_block2 = "192.168.2.0/24"
+pub_subnet_name = "gfetu_pub_subnet"
+priv_subnet_name = "gfetu_priv_subnet"

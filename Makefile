@@ -33,3 +33,8 @@ deploy-ansible: ansible-playbook
 # Combined target for deployment
 .PHONY: deploy
 deploy: terraform-init terraform-apply key-permission ansible-playbook
+
+
+# terraform target
+.PHONY: terraform
+terraform: terraform-init terraform-apply key-permission

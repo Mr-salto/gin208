@@ -21,7 +21,22 @@
         mode: '0755'
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
-#### A faire: changer la conf nginx pour servir la page html
+
+  - name: delete default nginx site configuration
+    ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+    notify: restart nginx
+
+  - name: deploy new site configuration
+    ansible.builtin.template:
+      src: files/nginx.conf
+      dest: /etc/nginx/sites-enabled/{{ domain }}
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart nginx
+
   - name: change index.html
     ansible.builtin.copy:
       src: files/index.html
@@ -30,6 +45,8 @@
       owner: "{{ ansible_user }}"
       group: "{{ ansible_user }}"
 
+
+#### change nginx configuration
 
   - name: install certbot
     community.general.snap:

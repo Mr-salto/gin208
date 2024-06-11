@@ -90,11 +90,21 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ssh_ipv4" {
   ip_protocol       = "tcp"
 }
 
+## Allow HTTP
 resource "aws_vpc_security_group_ingress_rule" "allow_80" {
   security_group_id = aws_security_group.gfetu_sg_front.id
   cidr_ipv4         = "137.194.0.0/16"
   from_port         = 80
   to_port           = 80
+  ip_protocol       = "tcp"
+}
+
+## Allow HTTPS
+resource "aws_vpc_security_group_ingress_rule" "allow_443" {
+  security_group_id = aws_security_group.gfetu_sg_front.id
+  cidr_ipv4         = "137.194.0.0/16"
+  from_port         = 443
+  to_port           = 443
   ip_protocol       = "tcp"
 }
 
@@ -138,6 +148,12 @@ data "aws_ami" "ami" {
   }
 }
 
+data "aws_iam_role" "r53_devops" {
+  name = "r53-devops"
+}
+
+# change IAM role to enable certificate generation
+
 resource "aws_instance" "gfetu_frontend" {
   ami                         = data.aws_ami.ami.id
   instance_type               = "t2.micro"
@@ -146,6 +162,8 @@ resource "aws_instance" "gfetu_frontend" {
   associate_public_ip_address = true
   source_dest_check           = false
   security_groups             = [aws_security_group.gfetu_sg_front.id]
+
+  iam_instance_profile        = data.aws_iam_role.r53_devops.name
 
   tags = {
     Name = "gfetu_frontend"

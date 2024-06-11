@@ -90,10 +90,10 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ssh_ipv4" {
   ip_protocol       = "tcp"
 }
 
-## Allow HTTP
+## Allow HTTP (obliged to allow it on the internet to let letsencrypt issue the certificate for the web page)
 resource "aws_vpc_security_group_ingress_rule" "allow_80" {
   security_group_id = aws_security_group.gfetu_sg_front.id
-  cidr_ipv4         = "137.194.0.0/16"
+  cidr_ipv4         = "0.0.0.0/0"
   from_port         = 80
   to_port           = 80
   ip_protocol       = "tcp"
@@ -261,6 +261,7 @@ backend ansible_host=${aws_instance.gfetu_backend.public_ip}
 [all:vars]
 ansible_ssh_private_key_file=./../.ssh/private_key_gfetu_gin208
 ansible_user=ubuntu
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@${aws_instance.gfetu_frontend.public_ip}"'
 EOF
 }
 

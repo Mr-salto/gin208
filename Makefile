@@ -22,17 +22,19 @@ terraform-destroy:
 key-permission:
 	chmod 400 ../.ssh/private_key_gfetu_gin208
 # Ansible target
-.PHONY: ansible-playbook
-ansible-playbook:
+.PHONY: ansible
+ansible:
 	ansible-playbook -i ./inventory.ini frontend_nginx.yml
 
+.PHONY: certificate
+certificate: ansible-playbook -i ./inventory.ini issue_certificate.yml
 
 .PHONY: deploy-ansible
 deploy-ansible: ansible-playbook
 
 # Combined target for deployment
 .PHONY: deploy
-deploy: terraform-init terraform-apply key-permission ansible-playbook
+deploy: terraform-init terraform-apply key-permission ansible
 
 
 # terraform target

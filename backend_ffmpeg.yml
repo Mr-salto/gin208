@@ -1,0 +1,53 @@
+---
+- name: Configure FFmpeg to Stream Video
+  hosts: backend
+  become: yes
+  
+  vars_files:
+    - vars/generic.yml
+    
+  tasks:
+    - name: Update apt repository
+      apt:
+        update_cache: yes
+
+    - name: Install FFmpeg
+      apt:
+        name: ffmpeg
+        state: present
+
+    - name: Create directory for video
+      file:
+        path: /home/ubuntu/videos
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Upload video file
+      copy:
+        src: files/video1.mp4
+        dest: /home/ubuntu/videos/video1.mp4
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+
+    - name: Create directory for HLS stream
+      file:
+        path: /var/www/hls
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Start FFmpeg to stream video
+      command: >
+        ffmpeg -re -i /home/ubuntu/videos/video.mp4
+        -codec: copy
+        -start_number 0
+        -hls_time 10
+        -hls_list_size 0
+        -f hls /home/ubuntu/videos/hls/index.m3u8
+      async: 3600
+      poll: 0

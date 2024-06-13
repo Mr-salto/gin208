@@ -29,7 +29,7 @@
         state: absent
     notify: restart nginx
 
-  - name: deploy new site configuration
+  - name: deploy http site configuration
     ansible.builtin.template:
       src: files/nginx_web_frontend.conf
       dest: /etc/nginx/sites-enabled/{{ domain }}
@@ -37,6 +37,16 @@
       group: root
       mode: '0644'
     notify: restart nginx
+
+  - name: deploy ffmpeg nginx configuration file
+    ansible.builtin.template:
+        src: files/nginx_ffmpeg.conf
+        dest: /etc/nginx/nginx_ffmpeg.conf
+        owner: root
+        group: root
+        mode: '0644'
+    notify:
+      - restart nginx
 
   - name: change index.html
     ansible.builtin.copy:

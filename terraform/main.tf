@@ -13,11 +13,6 @@ resource "aws_vpc" "gfetu_vpc" {
   }
 }
 
-#Capture vpc_id in output variable
-output "vpc_id" {
-  value = aws_vpc.gfetu_vpc.id
-}
-
 
 #Create 2 subnets
 resource "aws_subnet" "pub_subnet" {
@@ -247,31 +242,52 @@ output "private_ip_backend" {
 }
 
 
-
-
-
 # Generate inventory file
 resource "local_file" "inventory" {
   filename = "../inventory.ini"
   content = <<EOF
 frontend ansible_host=${aws_instance.gfetu_frontend.public_ip}
+frontend_priv ansible_host=${aws_instance.gfetu_frontend.private_ip}
 
-backend ansible_host=${aws_instance.gfetu_backend.public_ip}
+backend ansible_host=${aws_instance.gfetu_backend.private_ip} ansible_ssh_common_args='-o ProxyJump=frontend'
+
 
 [all:vars]
-ansible_ssh_private_key_file=./../.ssh/private_key_gfetu_gin208
+ansible_ssh_private_key_file=../.ssh/private_key_gfetu_gin208
 ansible_user=ubuntu
-ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@${aws_instance.gfetu_frontend.public_ip}"'
 EOF
 }
 
 
-#### jump host ssh
-resource "local_file" "ssh_instructions" {
-filename = "./ssh_instructions.txt"
-content = <<EOF
-To connect to the backend instance through the frontend jump host, use the following command:
-ssh -i ${local_file.gfetu_private_key.filename} -J ubuntu@${aws_instance.gfetu_frontend.public_ip} ubuntu@${aws_instance.gfetu_backend.private_ip}
+resource "local_file" "ssh_config" {
+  filename = "../jump_host_config"
+  content  = <<EOF
+Host frontend
+  HostName ${aws_instance.gfetu_frontend.public_ip}
+  User ubuntu
+  IdentityFile ~/.ssh/private_key_gfetu_gin208
+  ForwardAgent yes
+
+Host backend
+  HostName ${aws_instance.gfetu_backend.private_ip}
+  User ubuntu
+  ProxyJump frontend
+  IdentityFile ~/.ssh/private_key_gfetu_gin208
+  ForwardAgent yes
+EOF
+}
+
+
+resource "local_file" "ansible_cfg" {
+  filename = "../ansible.cfg"
+  content  = <<EOF
+[defaults]
+inventory = ./inventory.ini
+private_key_file = ~/.ssh/private_key_gfetu_gin208
+host_key_checking = False
+
+[ssh_connection]
+ssh_args = -F ./jump_host_config
 EOF
 }
 

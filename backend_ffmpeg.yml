@@ -43,11 +43,8 @@
 
     - name: Start FFmpeg to stream video
       command: >
-        ffmpeg -re -i /home/ubuntu/videos/video.mp4
-        -codec: copy
-        -start_number 0
-        -hls_time 10
-        -hls_list_size 0
-        -f hls /home/ubuntu/videos/hls/index.m3u8
+        ffmpeg -re -stream_loop -1 -i /home/ubuntu/videos/video1.mp4
+        -c:v libx264 -c:a aac -strict -2
+        -f flv rtmp://{{ frontend_priv }}/live/stream
       async: 3600
       poll: 0

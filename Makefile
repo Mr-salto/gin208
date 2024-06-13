@@ -1,6 +1,7 @@
 # Define default target
 .DEFAULT_GOAL := deploy
 
+
 # Terraform targets
 .PHONY: terraform-init
 terraform-init:

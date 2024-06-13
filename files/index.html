@@ -1,38 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello World Page</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <style>
+        /* Style for play button */
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            width: 80px;
+            height: 80px;
+            border: none;
+            background-color: transparent;
+        }
+        .play-button::before {
+            content: "\25B6"; /* Unicode play icon */
+            font-size: 2.5rem;
+            color: white;
+            display: block;
+            text-align: center;
+            line-height: 80px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-body text-center">
-            <h1 class="card-title">Hello, World!</h1>
-            <p class="card-text">Welcome to my devops training.</p>
-            <div class="alert alert-warning" role="alert" id="HttpsCheck">
-              Warning: You are accessing this page over an insecure connection (HTTP). Please consider using a secure connection (HTTPS) for better security.
-            </div>
-          </div>
-        </div>
-      </div>
+    <div id="video-container">
+        <video id="my-video" width="100%" controls>
+            <source src="/hls/index.m3u8" type="application/x-mpegURL">
+            Your browser does not support the video tag.
+        </video>
+        <button class="play-button" onclick="playPause()">Play</button>
     </div>
-  </div>
-  <script>
-    // JavaScript to change the site's color based on the protocol
-    const isSecure = window.location.protocol === 'https:';
-    const body = document.querySelector('body');
-    const httpMessage = document.getElementById('HttpsCheck');
-    if (isSecure) {
-      body.style.backgroundColor = 'green';
-      httpMessage.classList.add('d-none');
-    } else {
-      body.style.backgroundColor = 'red';
-    }
-  </script>
+
+    <script>
+        // Function to play or pause the video
+        function playPause() {
+            var video = document.getElementById("my-video");
+            var button = document.querySelector(".play-button");
+
+            if (video.paused) {
+                video.play();
+                button.style.display = "none"; // Hide the play button when video starts
+            } else {
+                video.pause();
+            }
+        }
+    </script>
 </body>
 </html>

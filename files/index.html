@@ -30,18 +30,20 @@
 <body>
     <div id="video-container">
         <video id="my-video" width="100%" controls>
-            <source src="/hls/index.m3u8" type="application/x-mpegURL">
+            <source src="/hls/stream.m3u8" type="application/x-mpegURL">
             Your browser does not support the video tag.
         </video>
         <button class="play-button" onclick="playPause()">Play</button>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
+        var video = document.getElementById("my-video");
+        var button = document.querySelector(".play-button");
+        var videoSrc = "/hls/stream.m3u8";
+
         // Function to play or pause the video
         function playPause() {
-            var video = document.getElementById("my-video");
-            var button = document.querySelector(".play-button");
-
             if (video.paused) {
                 video.play();
                 button.style.display = "none"; // Hide the play button when video starts
@@ -49,6 +51,32 @@
                 video.pause();
             }
         }
+
+        // Function to log video events
+        function logEvent(event) {
+            console.log(event.type);
+        }
+
+        // Check if the browser supports HLS natively
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = videoSrc;
+        } else if (Hls.isSupported()) {
+            var hls = new Hls();
+            hls.loadSource(videoSrc);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                video.play();
+            });
+        } else {
+            console.error("This browser does not support HLS.");
+        }
+
+        // Attach event listeners for debugging
+        video.addEventListener("play", logEvent);
+        video.addEventListener("pause", logEvent);
+        video.addEventListener("error", function(e) {
+            console.error("Video error:", e);
+        });
     </script>
 </body>
 </html>

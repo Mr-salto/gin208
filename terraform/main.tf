@@ -103,6 +103,15 @@ resource "aws_vpc_security_group_ingress_rule" "allow_443" {
   ip_protocol       = "tcp"
 }
 
+## Allow HTTPS
+resource "aws_vpc_security_group_ingress_rule" "allow_ffmpeg" {
+  security_group_id = aws_security_group.gfetu_sg_front.id
+  cidr_ipv4         = aws_subnet.priv_subnet.cidr_block
+  from_port         = 1935
+  to_port           = 1935
+  ip_protocol       = "tcp"
+}
+
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4_front" {
   security_group_id = aws_security_group.gfetu_sg_front.id
@@ -139,7 +148,8 @@ data "aws_ami" "ami" {
   }
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20240301"]
+    #values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-20.04-amd64-server-20240301"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
   }
 }
 

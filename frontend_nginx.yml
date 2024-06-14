@@ -11,7 +11,8 @@
     ansible.builtin.apt:                    
       update_cache: yes                     
       pkg:                                  
-        - nginx                             
+        - nginx     
+        - libnginx-mod-rtmp                        
       state: present                        
 
   - name: Create the web root directory
@@ -22,6 +23,13 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
 
+  - name: Create directory for nginx rtmp conf
+    file:
+        path: /etc/nginx/rtmp.conf.d
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
 #### change nginx configuration
   - name: delete default nginx site configuration
     ansible.builtin.file:
@@ -41,12 +49,21 @@
   - name: deploy ffmpeg nginx configuration file
     ansible.builtin.template:
         src: files/nginx_ffmpeg.conf
-        dest: /etc/nginx/nginx_ffmpeg.conf
+        dest: /etc/nginx/rtmp.conf.d/nginx_ffmpeg.conf
         owner: root
         group: root
         mode: '0644'
     notify:
       - restart nginx
+
+  - name: Ensure nginx.conf includes nginx_ffmpeg.conf
+    ansible.builtin.lineinfile:
+        path: /etc/nginx/nginx.conf
+        line: "include /etc/nginx/rtmp.conf.d/*.conf;"
+        insertafter: "EOF"
+        state: present
+    notify:
+        - restart nginx
 
   - name: change index.html
     ansible.builtin.copy:

@@ -43,8 +43,6 @@
 
     - name: Start FFmpeg to stream video
       command: >
-        ffmpeg -re -stream_loop -1 -i /home/ubuntu/videos/video1.mp4
-        -c:v libx264 -c:a aac -strict -2
-        -f flv rtmp://{{ frontend_priv }}/live/stream
+        ffmpeg -re -stream_loop -1 -i /home/ubuntu/videos/video1.mp4 -c:v libx264 -c:a aac -strict -2 -f flv rtmp://{{ hostvars['frontend_priv']['ansible_host'] }}/live/stream
       async: 3600
       poll: 0

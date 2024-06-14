@@ -1,11 +1,11 @@
 Host frontend
-  HostName 35.172.229.130
+  HostName 3.80.39.13
   User ubuntu
   IdentityFile ~/.ssh/private_key_gfetu_gin208
   ForwardAgent yes
 
 Host backend
-  HostName 192.168.2.204
+  HostName 192.168.2.93
   User ubuntu
   ProxyJump frontend
   IdentityFile ~/.ssh/private_key_gfetu_gin208

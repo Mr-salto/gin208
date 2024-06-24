@@ -97,7 +97,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_80" {
 ## Allow HTTPS
 resource "aws_vpc_security_group_ingress_rule" "allow_443" {
   security_group_id = aws_security_group.gfetu_sg_front.id
-  cidr_ipv4         = "137.194.0.0/16"
+  cidr_ipv4         = "0.0.0.0/0"
   from_port         = 443
   to_port           = 443
   ip_protocol       = "tcp"
@@ -298,6 +298,13 @@ host_key_checking = False
 
 [ssh_connection]
 ssh_args = -F ./jump_host_config
+EOF
+}
+
+resource "local_file" "generic" {
+  filename = "../vars/generic.yml"
+  content  = <<EOF
+domain: ${var.host_name}.${data.aws_route53_zone.zone.name} 
 EOF
 }
 

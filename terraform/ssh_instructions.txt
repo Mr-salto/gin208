@@ -1,2 +1,0 @@
-To connect to the backend instance through the frontend jump host, use the following command:
-ssh -i ../../.ssh/private_key_gfetu_gin208 -J ubuntu@52.23.202.190 ubuntu@192.168.2.19

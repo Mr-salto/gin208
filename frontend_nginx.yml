@@ -1,0 +1,81 @@
+---
+- name: Deploy and configure Nginx on frontend instance
+  hosts: frontend
+  become: true
+  
+  vars_files:
+    - vars/generic.yml
+  
+  tasks:
+  - name: Install nginx package             
+    ansible.builtin.apt:                    
+      update_cache: yes                     
+      pkg:                                  
+        - nginx     
+        - libnginx-mod-rtmp                        
+      state: present                        
+
+  - name: Create the web root directory
+    ansible.builtin.file:
+        path: /var/www/{{domain}}
+        state: directory
+        mode: '0755'
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+  - name: Create directory for nginx rtmp conf
+    file:
+        path: /etc/nginx/rtmp.conf.d
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+#### change nginx configuration
+  - name: delete default nginx site configuration
+    ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+    notify: restart nginx
+
+  - name: deploy http site configuration
+    ansible.builtin.template:
+      src: files/nginx_web_frontend.conf
+      dest: /etc/nginx/sites-enabled/{{ domain }}
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart nginx
+
+  - name: deploy ffmpeg nginx configuration file
+    ansible.builtin.template:
+        src: files/nginx_ffmpeg.conf
+        dest: /etc/nginx/rtmp.conf.d/nginx_ffmpeg.conf
+        owner: root
+        group: root
+        mode: '0644'
+    notify:
+      - restart nginx
+
+  - name: Ensure nginx.conf includes nginx_ffmpeg.conf
+    ansible.builtin.lineinfile:
+        path: /etc/nginx/nginx.conf
+        line: "include /etc/nginx/rtmp.conf.d/*.conf;"
+        insertafter: "EOF"
+        state: present
+    notify:
+        - restart nginx
+
+  - name: change index.html
+    ansible.builtin.copy:
+      src: files/index.html
+      dest: /var/www/{{domain}}/index.html
+      mode: '0775'
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+  
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+    

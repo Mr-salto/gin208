@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <style>
+        /* Style for play button */
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            width: 80px;
+            height: 80px;
+            border: none;
+            background-color: transparent;
+        }
+        .play-button::before {
+            content: "\25B6"; /* Unicode play icon */
+            font-size: 2.5rem;
+            color: white;
+            display: block;
+            text-align: center;
+            line-height: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <video id="my-video" width="100%" controls>
+            Your browser does not support the video tag.
+        </video>
+        <button class="play-button" onclick="playPause()">Play</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script>
+        var video = document.getElementById("my-video");
+        var button = document.querySelector(".play-button");
+        var videoSrc = "/hls/stream.m3u8";
+
+        // Function to play or pause the video
+        function playPause() {
+            if (video.paused) {
+                video.play();
+                button.style.display = "none"; // Hide the play button when video starts
+            } else {
+                video.pause();
+            }
+        }
+
+        // Function to log video events
+        function logEvent(event) {
+            console.log(event.type);
+        }
+
+        // Check if the browser supports HLS natively
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = videoSrc;
+        } else if (Hls.isSupported()) {
+            var hls = new Hls();
+            hls.loadSource(videoSrc);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                video.play();
+            });
+        } else {
+            console.error("This browser does not support HLS.");
+        }
+
+        // Attach event listeners for debugging
+        video.addEventListener("play", logEvent);
+        video.addEventListener("pause", logEvent);
+        video.addEventListener("error", function(e) {
+            console.error("Video error:", e);
+        });
+    </script>
+</body>
+</html>

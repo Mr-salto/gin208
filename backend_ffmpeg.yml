@@ -1,0 +1,48 @@
+---
+- name: Configure FFmpeg to Stream Video
+  hosts: backend
+  become: yes
+  
+  vars_files:
+    - vars/generic.yml
+    
+  tasks:
+    - name: Update apt repository
+      apt:
+        update_cache: yes
+
+    - name: Install FFmpeg
+      apt:
+        name: ffmpeg
+        state: present
+
+    - name: Create directory for video
+      file:
+        path: /home/ubuntu/videos
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Upload video file
+      copy:
+        src: files/video1.mp4
+        dest: /home/ubuntu/videos/video1.mp4
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+
+    - name: Create directory for HLS stream
+      file:
+        path: /var/www/hls
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Start FFmpeg to stream video
+      command: >
+        ffmpeg -re -stream_loop -1 -i /home/ubuntu/videos/video1.mp4 -c:v libx264 -c:a aac -strict -2 -f flv rtmp://{{ hostvars['frontend_priv']['ansible_host'] }}/live/stream
+      async: 3600
+      poll: 0

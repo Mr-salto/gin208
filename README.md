@@ -20,3 +20,5 @@ To run the project
 
   - ```cd gin208_project``` 
   - ```make deploy```
+
+If things go well, service should be running at https://boumboumboum.devops.intuitivesoft.cloud/ 
